@@ -13,7 +13,7 @@ substitutions:
   rxPin: "5" #GPIO pin to use for data receive (yellow line) 
   txPin: "4" #GPIO pin to use for data transmit (green line)
   monitorPin: "14" #GPIO pin to use for monitoring module traffic such as RF or Expanders . Set to -1 to disable
-  
+  txEnablePin: "12" #GPIO pin to use as enable signal for transmit on green.
   # module addresses:
   # 07 4229 zone expander  zones 9-16
   # 08 4229 zone expander zones 17-24
@@ -95,7 +95,7 @@ ota:
 
 custom_component:
 - lambda: |-
-    auto VistaECP = new vistaECPHome($keypadAddr,$rxPin,$txPin,$monitorPin);
+    auto VistaECP = new vistaECPHome($keypadAddr,$rxPin,$txPin,$monitorPin,$txEnablePin);
     VistaECP->accessCode="$accessCode";
     VistaECP->quickArm=$quickArm;
     VistaECP->expanderAddr1=$expanderAddr1; //zone expander

@@ -1108,7 +1108,7 @@ void Vista::stop() {
     keybusConnected = false;
 }
 
-void Vista::begin(int receivePin, int transmitPin, char keypadAddr, int monitorTxPin) {
+void Vista::begin(int receivePin,int transmitPin, char keypadAddr,int monitorTxPin, int txEnablePin) {
     //hw_wdt_disable(); //debugging only
     //ESP.wdtDisable(); //debugging only
     expectByte = 0;
@@ -1118,10 +1118,12 @@ void Vista::begin(int receivePin, int transmitPin, char keypadAddr, int monitorT
     txPin = transmitPin;
     rxPin = receivePin;
     monitorPin = monitorTxPin;
+    txEnablePin = txEnablePin;
 
     //panel data rx interrupt - yellow line
     if (vistaSerial -> isValidGPIOpin(rxPin)) {
         vistaSerial = new SoftwareSerial(rxPin, txPin, true, 50);
+        vistaSerial->setTransmitEnablePin(txEnablePin);
         vistaSerial -> begin(4800, SWSERIAL_8E2);
         attachInterrupt(digitalPinToInterrupt(rxPin), rxISRHandler, CHANGE);
     }

@@ -18,6 +18,7 @@
 #define RX_PIN 5
 #define TX_PIN 4
 #define MONITOR_PIN 14 // pin used to monitor the green TX line (3.3 level dropped from 12 volts
+#define TX_ENABLE_PIN 12 // pin used to monitor the green TX line (3.3 level dropped from 12 volts
 #endif
 
 Stream * OutputStream = & Serial;
@@ -50,9 +51,10 @@ enum sysState {
 };
 
 class vistaECPHome: public PollingComponent, public CustomAPIDevice {
-    public: vistaECPHome(char kpaddr = KP_ADDR, int receivePin = RX_PIN, int transmitPin = TX_PIN, int monitorTxPin = MONITOR_PIN): kpaddr(kpaddr),
+    public: vistaECPHome(char kpaddr = KP_ADDR, int receivePin = RX_PIN, int transmitPin = TX_PIN, int monitorTxPin = MONITOR_PIN, int txEnablePin=TX_ENABLE_PIN) ): kpaddr(kpaddr),
     rxPin(receivePin),
     txPin(transmitPin),
+    txEnablePin(txEnablePin),
     monitorPin(monitorTxPin) {}
 
     // start panel language definitions
@@ -152,6 +154,7 @@ class vistaECPHome: public PollingComponent, public CustomAPIDevice {
     char kpaddr;
     int rxPin;
     int txPin;
+    int txEnablePin;
     int monitorPin;
     const char * accessCode;
     bool quickArm;
@@ -299,7 +302,7 @@ class vistaECPHome: public PollingComponent, public CustomAPIDevice {
         });
         systemStatusChangeCallback(STATUS_ONLINE);
         statusChangeCallback(sac, true);
-        vista.begin(rxPin, txPin, kpaddr, monitorPin);
+    	vista.begin(rxPin, txPin, kpaddr, monitorPin, txEnablePin);
 
         //retrieve zone status from saved persistent global storage to keep state accross reboots
         int zs = id(zoneStates);
