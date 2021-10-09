@@ -154,11 +154,9 @@ custom_component:
         case 6: id(z6).publish_state(open); break;
         case 7: id(z7).publish_state(open); break;
         case 8: id(z8).publish_state(open); break;
-        
         case 9: id(z9).publish_state(open); break;
-        case 10: id(z10).publish_state(open); break;
-       
-        case 17: id(z17).publish_state(open); break;
+        case 95: id(z95).publish_state(open); break;
+        case 99: id(z99).publish_state(open); break;
       }
     }); //you can add more zones above . Also add the text sensor entry below
     
@@ -263,48 +261,48 @@ text_sensor:
     #zone definitions
   - platform: template
     id: z1
-    name: "$systemName Front door"
+    name: "$systemName Hall Heat SMoke"
 
   - platform: template
     id: z2
-    name: "$systemName Garage door"
+    name: "$systemName Entry Doors"
 
   - platform: template
     id: z3
-    name: "$systemName Back door"
+    name: "$systemName Master Windows Doors"
 
   - platform: template
     id: z4
-    name: "$systemName Living room window"
+    name: "$systemName Family Dining Perimeter"
 
   - platform: template
     id: z5
-    name: "$systemName Dining room window"
+    name: "$systemName Office Bedroom Windows"
 
   - platform: template
     id: z6
-    name: "$systemName Family room window LF"
+    name: "$systemName Lower Window Door"
 
   - platform: template
     id: z7
-    name: "$systemName Family room window RF"
+    name: "$systemName Master Bedroom Motion"
 
   - platform: template
     id: z8
-    name: "$systemName Basement windows"
+    name: "$systemName Tamper"
     
   - platform: template
     id: z9
-    name: "$systemName Basement windows9"
+    name: "$systemName Downstairs Motion"
     
   - platform: template
-    id: z10
-    name: "$systemName Basement windows10"
- 
+    id: z95
+    name: "$systemName Master Fire"
+
 
   - platform: template
-    id: z17
-    name: "$systemName zone 17"
+    id: z99
+    name: "$systemName Master Panic"
 
     #system status 
   - platform: template
