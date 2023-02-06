@@ -1,5 +1,32 @@
 # Honeywell/Ademco Vista ECP ESPHome custom component and library
 
+## This fork provides a PCB
+
+This is based on work that was discussed on the main fork issues at 
+https://github.com/Dilbert66/esphome-vistaECP/issues/49
+
+Based on the work of the main fork, I created a design and pcb. At the time, the main fork did not provide a fully isolated schematic, which I wanted if I was going to use this on my system.  I invetsigated several designs and settled on this one for my uses. The issue describes a lot of the possibilites. In the end, I used 3 optocouplers and 2 transistors.
+You should be able to get the board manufactured cheaply e.g. on JLCPCB.
+
+
+This is provided with no warranty implied or explicit. I can not be held responsible for you using this work. While, I have tested this in my own equipment for over a year, I suspect the main fork is better tested, so I would recommend this approach only for advanced users who know how to use an oscilloscope.
+ 
+* circuit/v1-manufacture-files
+  * has gerber, pdf schematic and case stl files
+* circuit/kicad
+  * KiCad source for the pcb.
+
+Here's the isolated schematic
+
+![Image of schematic](circuit/v1-manufacture-files/schematic.png)
+
+Here is what the manufactured product looks like
+
+![Image of case and pcb](pcb-and-case.png)
+
+
+## Main fork documentation
+
 This is an implementation of an ESPHOME custom component and ESP Library to interface directly to a Safewatch/Honeywell/Ademco Vista 15/20 alarm system using the ECP interface and very inexpensive ESP8266/ESP32 modules .  The ECP library code is based on the arduino source code from Mark Kimsal's repository located at  https://github.com/TANC-security/keypad-firmware.  It has been  completely rewritten as a class and adapted to work on the ESP8266/ESP32 platform using interrupt driven communications and pulse timing. A custom modified version of Peter Lerup's ESPsoftwareserial library (https://github.com/plerup/espsoftwareserial) was also used for the serial communications to work more efficiently within the tight timing of the ESP8266 interrupt window. 
 
 To compensate for the limitations of the minimal zone data sent by the panel, a time to live (TTL) attribute for each faulted zone was used.  The panel only sends fault messages when a zone is faulted or alarmed and does not send data when the zone is restored, therefore the TTL timer is used to reset a zone after a preset duration once it stops receiving those fault/alarm messages for that zone.  You can tweak the TTL setting in the YAML.  The default timer is set to 30 seconds.  I've also added persistent storage and recovery for zone status in the event of a power failure or reboot of the ESP.  The system will use persistent storage to recover the last known status of the zone on restart.
@@ -19,7 +46,6 @@ If you are not familiar with ESPHome , I suggest you read up on this application
 To use this software you simply place the vistaAlarm.yaml file in your main esphome directory, then copy the *.h and *.cpp files from the vistaEcpInterface directory to a similarly named subdirectory (case sensitive) in your esphome main directory and then compile the yaml as usual. The directory name is in the "includes:" option of the yaml.
 
 ##### Notes: 
-
 * If you use the zone expanders and/or LRR functions, you might need to clear CHECK messages for the LRR and expanded zones from the panel on boot or restart by entering your access code followed by 1 twice. eg 12341 12341 where 1234 is your access code.
 
 The yaml attributes should be fairly self explanatory for customization. The yaml example also shows how to setup named zones. 
@@ -33,7 +59,7 @@ The yaml attributes should be fairly self explanatory for customization. The yam
 
 * Long Range Radio (LRR) emulation (or monitoring) statuses for more detailed status messages
 
-* Zone status - Open, Alarmed, Closed and Bypass with named zones
+* Zone status - Open, Busy, Alarmed and Closed with named zones
 
 * Arm, disarm or send any sequence of commands to the panel
 
@@ -49,7 +75,7 @@ The following services are published to home assistant for use in various script
 	alarm_arm_away: Arms the alarm in away mode.
 	alarm_arm_night: Arms the alarm in night mode (no entry delay).
 	alarm_trigger_panic: Trigger a panic alarm.
-    alarm_trigger_fire: Trigger a fire alarm.
+        alarm_trigger_fire: Trigger a fire alarm.
 	alarm_keypress: Sends a string of characters to the alarm system. 
 
 ## Example in Home Assistant
@@ -78,7 +104,7 @@ alarm_control_panel:
         arm_night:
           - service: esphome.vistaalarm_alarm_arm_night
             data_template:
-              code: '{{code}}' #if you didnt set it in the yaml, then send the code here
+              code: '{{code}}' #if you didnt set it in the yaml, then send the code herefschema
           
         disarm:
           - service: esphome.vistaalarm_alarm_disarm
@@ -113,37 +139,33 @@ alarm_control_panel:
 
 ## Wiring
 
+
 ### Non-isolated simple version
 
-![ecpinterface](https://user-images.githubusercontent.com/7193213/134977586-dc119221-4f44-4c50-b9b5-7021194f14b5.png)
+![ecpinterface](https://user-images.githubusercontent.com/7193213/134977241-8a265f90-fc83-4418-a16f-a529db9390ac.png)
 
 ### Alternative version using transistors instead of an optocoupler for transmit
 
-![ecpinterface-noopto](https://user-images.githubusercontent.com/7193213/135344771-82778799-2f9c-4f74-a040-1a6d956a8562.png)
-
-### Ground isolated version
-
-![ecpinterface-isolated](https://user-images.githubusercontent.com/7193213/135283874-eceeffea-7f31-4344-8b5d-be91b5564b72.png)
+![ecpinterface-noopto](https://user-images.githubusercontent.com/7193213/135342919-7805e327-a830-45a1-ae54-3222eeae4de7.png)
 
 
-* Optocouplers should have a minimum CTR of 50. Recommendations are the 4N35 or TLP521. You can vary the resistor values for the simple version but keep the ratio similar for the voltage dividers R2/R3 and R4/R5. R1 should not be set below 150 ohm when using an ESP8266  or 100ohm when using an ESP32. Resistor values are chosen to minimize load on ECP bus while still providing full output signals on the optocouplers. 
-* My goal was to keep the design as simple as possible without causing any bus load or interference with maximum signal fidelity.  Since the transmit circuit required high side switching I opted to use an optocoupler since I had a few on hand and it simplified the amount of components needed but proved to have it's own issues as far as CTR requirements.  For those that would prefer not using optocouplers due to availability or other reasons, i've provided a version using transistors for the transmit circuit instead. 
+### Ground Isolated version
+
+
+![ecpinterface-isolated](https://user-images.githubusercontent.com/7193213/135283492-00946be8-1c98-4e19-ab43-da0a44096e44.png)
+
+
+## Wiring Notes
+
+* Optocouplers should have a minimum CTR of 50. Recommendations are the 4N35 or TLP521. You can vary the resistor values for the simple version but keep the ratio similar for the voltage dividers R2/R3 and R4/R5. R1 should not be set below 150 ohm. Resistor values are chosen to minimize load on ECP bus while still providing full output signals on the optocouplers. 
+* My goal was to keep the design as simple as possible without causing any bus load or interference with maximum signal fidelity.  Since the transmit circuit required high side switching I opted to use an optocoupler since I had a few on hand and it simplified the amount of components needed but proved to have it's own issues as far as CTR requirements.  For those that would prefer not using optocouplers due to availability or other reasons, i've provided a version using transistors for the transmit circuit instead.  
+
 
 ## OTA updates
+In order to make OTA updates, connection switch in frontend should be switched to OFF since the  ECP library is using interrupts.
 
-In order to make OTA updates, it is recommended that the connection switch in the frontend be switched to OFF since the  ECP library is using interrupts and could cause issues with the update process.
-
-## MQTT with Home Assistant / OpenHab / Homebridge
-
-If your preference is to use MQTT instead of ESPHOME, you can use the Arduino sketch from the MQTT-Example directory. It supports pretty much all functions of the ESPHOME implementation.  To use, edit the configuration items at the top of the file for your setup then simply put the ino and all *.h and *.cpp vista library files in the same sketch directory and compile.  Read the comments within the sketch for more details.   
-
-The sketch supports ArduinoOTA (https://www.arduino.cc/reference/en/libraries/arduinoota/) that will enable you to update the code via wifi once the initial upload is done using the Arduino IDE. 
-
-Also supported are encrypted TLS connections to an SSL enabled MQTT server such as Mosquito on port 8883.  Please note that due to the high memory useage of the WifiClientSecure implamentation, the use of an ESP32 is recommended over an ESP8266.  Simply uncomment  "#define useMQTTSSL" to use.
-
-You can also use this sketch with any other home control application that supports MQTT such as openHAB, Homebridge(HomeKit) , etc.  Some configuration examples provided in directory MQTT-Example. They are versions modified for this application from the originals at https://github.com/taligentx/dscKeybusInterface/tree/master/examples.
-
-
+## MQTT with HomeAssistant
+If your preference is to use MQTT instead of ESPHOME, you can use the Arduino sketch from the MQTT-Example directory. It supports pretty much all functions of the ESPHOME implementation.  To use, edit the configuration items at the top of the file for your setup then simply put the ino and all *.h and *.cpp vista library files (from directory /src/vistaEcpInterface) in the same sketch directory and compile.  Read the comments within the sketch for more details.   The sketch also supports ArduinoOTA (https://www.arduino.cc/reference/en/libraries/arduinoota/) that will enable you to update the code via wifi once the initial upload is done.  
 
 ## Custom Alarm Panel Card
 
@@ -318,7 +340,6 @@ beep: sensor.vistabeeps
 
 
 ### sample sensor configuration for card using mqtt
-
 ```
 
 sensor:
@@ -358,7 +379,6 @@ sensor:
 ```
 
 ## References 
-
 You can checkout the links below for further reading and other implementation examples. Some portions of the code in the repositories below was used in creating the library.
 * https://github.com/TANC-security/keypad-firmware
 * https://github.com/cweemin/espAdemcoECP
@@ -368,3 +388,6 @@ This project is licensed under the Lesser General Public License version 2.1, or
 
 
 
+## Disclaimer
+
+THIS HARDWARE AND SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS “AS IS” AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
